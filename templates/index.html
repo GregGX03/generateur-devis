@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Générateur de Devis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #4472C4;
+    --violet: #7030A0;
+    --light-violet: #E8E0F0;
+    --light-pink: #FFF0F0;
+    --light-blue: #EEF2FF;
+    --bg: #F4F6FB;
+    --surface: #ffffff;
+    --border: #E2E6EF;
+    --text: #1A1D27;
+    --muted: #6B7280;
+    --danger: #DC2626;
+    --radius: 10px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: var(--shadow);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--blue);
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px;
+  }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-title {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .badge {
+    background: var(--light-blue);
+    color: var(--blue);
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+  }
+
+  label {
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    display: block; margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+
+  input[type=text], input[type=number] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #FAFBFD;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--blue); background: white; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-cols { display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 34px; gap: 8px; align-items: end; }
+
+  .col-labels {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr 34px;
+    gap: 8px;
+    margin-bottom: 6px;
+    padding: 6px 0 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .col-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .col-label.right { text-align: right; }
+
+  .item-row { margin-bottom: 8px; }
+
+  .montant-cell {
+    height: 35px;
+    display: flex; align-items: center; justify-content: flex-end;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    background: var(--light-blue);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0 11px;
+    cursor: text;
+    outline: none;
+  }
+  .montant-cell:focus { border-color: var(--blue); background: white; }
+
+  .btn-del {
+    width: 34px; height: 35px;
+    border: 1px solid #FCA5A5;
+    background: #FFF5F5;
+    color: var(--danger);
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-del:hover { background: #FEE2E2; }
+
+  .sec-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-add-line {
+    font-size: 12px; font-weight: 500;
+    color: var(--blue);
+    border: 1px dashed var(--blue);
+    background: transparent;
+    border-radius: 7px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-add-line:hover { background: var(--light-blue); }
+
+  .sec-total {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--violet);
+  }
+  .sec-total-label { font-weight: 400; color: var(--muted); font-size: 12px; }
+
+  .btn-remove-sec {
+    font-size: 12px; color: var(--danger);
+    border: 1px solid #FCA5A5; background: transparent;
+    border-radius: 7px; padding: 5px 12px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-remove-sec:hover { background: #FFF5F5; }
+
+  .btn-add-sec {
+    width: 100%;
+    border: 1.5px dashed var(--border);
+    background: transparent;
+    border-radius: var(--radius);
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+    cursor: pointer; margin-bottom: 1rem;
+    transition: all 0.15s;
+  }
+  .btn-add-sec:hover { border-color: var(--blue); color: var(--blue); background: var(--light-blue); }
+
+  .grand-total-card {
+    background: var(--light-pink);
+    border: 1px solid #FECACA;
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .gt-label { font-size: 15px; font-weight: 600; color: var(--violet); }
+  .gt-value { font-size: 24px; font-weight: 700; color: var(--violet); }
+
+  .footer-actions {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .btn-generate {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 14px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-generate:hover { opacity: 0.9; }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .status-msg {
+    font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 1rem;
+  }
+  .preview-table thead tr { background: var(--blue); color: white; }
+  .preview-table thead th { padding: 8px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+  .preview-table tbody tr:nth-child(even) { background: var(--light-blue); }
+  .preview-table tbody td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  .preview-table .total-row { background: var(--light-violet) !important; font-weight: 600; color: var(--violet); }
+  .preview-table .grand-row { background: var(--light-pink) !important; font-weight: 700; color: var(--violet); font-size: 14px; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+
+  .tab-btns { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .tab-btn {
+    padding: 7px 18px; border-radius: 7px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border);
+    background: white; color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  @media (max-width: 640px) {
+    .grid-cols { grid-template-columns: 1fr; }
+    .col-labels { display: none; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📋</div>
+    Générateur de Devis
+  </div>
+  <span style="font-size:12px;color:var(--muted);">Format FCFA · PDF professionnel</span>
+</header>
+
+<div class="main">
+  <p class="page-title">Nouveau Devis</p>
+  <p class="page-sub">Remplissez les sections ci-dessous puis générez votre PDF.</p>
+
+  <div class="tab-btns">
+    <button class="tab-btn active" onclick="switchTab('saisie')">✏️ Saisie</button>
+    <button class="tab-btn" onclick="switchTab('apercu')">👁 Aperçu</button>
+  </div>
+
+  <!-- SAISIE TAB -->
+  <div class="tab-content active" id="tab-saisie">
+
+    <div class="card">
+      <label>Titre du devis</label>
+      <input type="text" id="titre" value="DEVIS DE COFFRAGE" style="font-size:15px;font-weight:600;">
+    </div>
+
+    <div id="sections-container"></div>
+
+    <button class="btn-add-sec" onclick="addSection()">＋ Ajouter une section</button>
+
+    <div class="grand-total-card">
+      <span class="gt-label">TOTAL GÉNÉRAL DU DEVIS</span>
+      <span class="gt-value" id="grand-total">0 F</span>
+    </div>
+
+    <div class="footer-actions">
+      <div class="status-msg">
+        <div class="spinner" id="spinner"></div>
+        <span id="status-text"></span>
+      </div>
+      <button class="btn-generate" onclick="generatePDF()">
+        ⬇ Télécharger le PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- APERCU TAB -->
+  <div class="tab-content" id="tab-apercu">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:1rem">
+        <h2 style="font-size:18px;font-weight:700;text-decoration:underline;" id="preview-titre">DEVIS DE COFFRAGE</h2>
+      </div>
+      <table class="preview-table">
+        <thead><tr>
+          <th style="text-align:left">DÉSIGNATION</th>
+          <th class="center">QTÉ</th>
+          <th class="right">PU</th>
+          <th class="right">MONTANT</th>
+        </tr></thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let sections = [
+  {
+    nom: "Niveau Dalle",
+    labelTotal: "TOTAL NIVEAU DALLE",
+    items: [
+      { designation: "Coffrage niveaux longrine", qte: "", pu: "", montant: "220000" },
+      { designation: "Coffrage niveaux dalle", qte: "", pu: "", montant: "362000" },
+    ]
+  },
+  {
+    nom: "De la Dalle",
+    labelTotal: "TOTAL DE LA DALLE",
+    items: [
+      { designation: "Coffrage de la dalle", qte: "", pu: "", montant: "950000" },
+      { designation: "Coffrage de l'escalier", qte: "", pu: "", montant: "70000" },
+    ]
+  }
+];
+
+function fmt(n) {
+  if (!n && n !== 0) return '';
+  return Number(n).toLocaleString('fr-FR').replace(/\u202f/g, ' ') + ' F';
+}
+
+function calcMontant(item) {
+  const q = parseFloat(String(item.qte).replace(',', '.')) || 0;
+  const p = parseFloat(String(item.pu).replace(',', '.')) || 0;
+  const m = parseFloat(String(item.montant).replace(/\s/g, '').replace('F', '').replace(',', '.')) || 0;
+  return (q && p) ? q * p : m;
+}
+
+function sectionTotal(sec) {
+  return sec.items.reduce((s, it) => s + calcMontant(it), 0);
+}
+
+function grandTotal() {
+  return sections.reduce((s, sec) => s + sectionTotal(sec), 0);
+}
+
+function updateGrandTotal() {
+  document.getElementById('grand-total').textContent = fmt(grandTotal());
+}
+
+function render() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+
+  sections.forEach((sec, si) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const removeBtn = sections.length > 1
+      ? `<button class="btn-remove-sec" onclick="removeSection(${si})">✕ Supprimer</button>`
+      : '';
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="card-title">
+          Section <span class="badge">${si + 1}</span>
+        </div>
+        ${removeBtn}
+      </div>
+      <div class="grid-2" style="margin-bottom:1rem">
+        <div>
+          <label>Nom de la section</label>
+          <input type="text" value="${sec.nom}" onchange="sections[${si}].nom=this.value;updateGrandTotal()">
+        </div>
+        <div>
+          <label>Libellé du sous-total</label>
+          <input type="text" value="${sec.labelTotal}" onchange="sections[${si}].labelTotal=this.value">
+        </div>
+      </div>
+      <div class="col-labels">
+        <span class="col-label">Désignation</span>
+        <span class="col-label center">Qté</span>
+        <span class="col-label right">PU</span>
+        <span class="col-label right">Montant</span>
+        <span></span>
+      </div>
+      <div id="items-${si}"></div>
+      <div class="sec-actions">
+        <button class="btn-add-line" onclick="addItem(${si})">＋ Ajouter une ligne</button>
+        <div class="sec-total">
+          <span class="sec-total-label">${sec.labelTotal} :</span>
+          <span id="sec-total-${si}">${fmt(sectionTotal(sec))}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+
+    const itemsDiv = document.getElementById(`items-${si}`);
+    sec.items.forEach((item, ii) => {
+      const row = document.createElement('div');
+      row.className = 'item-row grid-cols';
+      const m = calcMontant(item);
+
+      row.innerHTML = `
+        <input type="text" placeholder="Désignation..." value="${item.designation || ''}"
+          onchange="sections[${si}].items[${ii}].designation=this.value">
+        <input type="number" placeholder="0" value="${item.qte || ''}" style="text-align:center"
+          oninput="sections[${si}].items[${ii}].qte=this.value;refreshItem(${si},${ii})">
+        <input type="number" placeholder="0" value="${item.pu || ''}" style="text-align:right"
+          oninput="sections[${si}].items[${ii}].pu=this.value;refreshItem(${si},${ii})">
+        <div class="montant-cell" id="mc-${si}-${ii}" contenteditable="true"
+          title="Saisir montant directement si pas de Qté×PU"
+          onblur="onMontantBlur(${si},${ii},this)">${m ? fmt(m) : ''}</div>
+        <button class="btn-del" onclick="removeItem(${si},${ii})">✕</button>
+      `;
+      itemsDiv.appendChild(row);
+    });
+  });
+
+  updateGrandTotal();
+}
+
+function onMontantBlur(si, ii, el) {
+  const item = sections[si].items[ii];
+  const q = parseFloat(String(item.qte).replace(',', '.')) || 0;
+  const p = parseFloat(String(item.pu).replace(',', '.')) || 0;
+  if (q && p) return; // calculé auto
+  const raw = el.textContent.replace(/\s/g, '').replace('F', '').replace(',', '.');
+  const val = parseFloat(raw) || 0;
+  sections[si].items[ii].montant = val ? String(val) : '';
+  el.textContent = val ? fmt(val) : '';
+  refreshTotals(si);
+}
+
+function refreshItem(si, ii) {
+  const item = sections[si].items[ii];
+  const q = parseFloat(String(item.qte).replace(',', '.')) || 0;
+  const p = parseFloat(String(item.pu).replace(',', '.')) || 0;
+  const el = document.getElementById(`mc-${si}-${ii}`);
+  if (el) {
+    if (q && p) {
+      el.textContent = fmt(q * p);
+      el.contentEditable = false;
+      el.style.opacity = '0.7';
+    } else {
+      el.contentEditable = true;
+      el.style.opacity = '1';
+    }
+  }
+  refreshTotals(si);
+}
+
+function refreshTotals(si) {
+  const el = document.getElementById(`sec-total-${si}`);
+  if (el) el.textContent = fmt(sectionTotal(sections[si]));
+  updateGrandTotal();
+}
+
+function addSection() {
+  sections.push({ nom: `Section ${sections.length + 1}`, labelTotal: `TOTAL SECTION ${sections.length + 1}`, items: [{ designation: '', qte: '', pu: '', montant: '' }] });
+  render();
+}
+
+function removeSection(si) {
+  sections.splice(si, 1);
+  render();
+}
+
+function addItem(si) {
+  sections[si].items.push({ designation: '', qte: '', pu: '', montant: '' });
+  render();
+}
+
+function removeItem(si, ii) {
+  sections[si].items.splice(ii, 1);
+  render();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['saisie', 'apercu'][i] === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach((c, i) => {
+    c.classList.toggle('active', ['tab-saisie', 'tab-apercu'][i] === `tab-${tab}`);
+  });
+  if (tab === 'apercu') renderPreview();
+}
+
+function renderPreview() {
+  document.getElementById('preview-titre').textContent = document.getElementById('titre').value;
+  const tbody = document.getElementById('preview-body');
+  tbody.innerHTML = '';
+  let grand = 0;
+
+  sections.forEach(sec => {
+    let secT = 0;
+    sec.items.forEach(item => {
+      const m = calcMontant(item);
+      secT += m;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.designation || ''}</td>
+        <td class="center">${item.qte || ''}</td>
+        <td class="right">${item.pu ? fmt(parseFloat(item.pu)) : ''}</td>
+        <td class="right">${m ? fmt(m) : ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const tr = document.createElement('tr');
+    tr.className = 'total-row';
+    tr.innerHTML = `
+      <td><strong>${sec.labelTotal}</strong></td>
+      <td colspan="2"></td>
+      <td class="right"><strong>${fmt(secT)}</strong></td>
+    `;
+    tbody.appendChild(tr);
+    grand += secT;
+  });
+
+  const tr = document.createElement('tr');
+  tr.className = 'grand-row';
+  tr.innerHTML = `
+    <td colspan="3"><strong>TOTAL GÉNÉRAL DU DEVIS</strong></td>
+    <td class="right"><strong>${fmt(grand)}</strong></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+async function generatePDF() {
+  const btn = document.querySelector('.btn-generate');
+  const spinner = document.getElementById('spinner');
+  const statusText = document.getElementById('status-text');
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  statusText.textContent = 'Génération en cours...';
+
+  const titre = document.getElementById('titre').value;
+  const payload = {
+    titre,
+    sections: sections.map(sec => ({
+      nom: sec.nom,
+      label_total: sec.labelTotal,
+      items: sec.items.map(it => {
+        const q = parseFloat(String(it.qte).replace(',', '.')) || 0;
+        const p = parseFloat(String(it.pu).replace(',', '.')) || 0;
+        const m = parseFloat(String(it.montant).replace(/\s/g, '').replace('F', '').replace(',', '.')) || 0;
+        return {
+          designation: it.designation,
+          qte: q || '',
+          pu: p || '',
+          montant: (q && p) ? q * p : m
+        };
+      })
+    }))
+  };
+
+  try {
+    const resp = await fetch('/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) throw new Error('Erreur serveur');
+
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = titre.replace(/\s+/g, '_').toLowerCase() + '.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    statusText.textContent = '✓ PDF téléchargé !';
+    setTimeout(() => { statusText.textContent = ''; }, 3000);
+  } catch (e) {
+    statusText.textContent = '✗ Erreur : ' + e.message;
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+render();
+</script>
+</body>
+</html>
